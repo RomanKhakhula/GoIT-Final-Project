@@ -78,7 +78,7 @@ analyse_discrete_features(init_data_df, discrete_initial, 'churn')
 # is_tv_subscriber, is_movie_package_subscriber - без змін
 # service_failure_count - групуємо 4+, OneHotEncod-имо
 # download_over_limit - OneHotEncod-имо
-work_df = init_data_df
+work_df = init_data_df.copy()
 
 for n in range(4):
   work_df[f'service_failure_count_{n}'] = [1 if n == el  else 0 for el in list(work_df['service_failure_count'])]
