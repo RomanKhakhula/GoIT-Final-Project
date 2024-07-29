@@ -14,11 +14,12 @@ def model_evaluation():
     data = pd.read_csv(data_path)
     
     # Розділення даних на ознаки та мітки
-    X = data.drop('churn', axis=1)
+    X = data.drop(['churn','upload_avg_norm','reamining_contract'], axis=1)
     y = data['churn']
 
     # Розділення на тренувальний та тестовий набори
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
 
     # Масштабування даних
     scaler = StandardScaler()

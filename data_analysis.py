@@ -135,7 +135,7 @@ def prepare_data_for_prediction(df):
 
   
   return df[
-        ['id','is_tv_subscriber', 'is_movie_package_subscriber', 'reamining_contract',
+        ['is_tv_subscriber', 'is_movie_package_subscriber', 
          'service_failure_count_0', 'service_failure_count_1', 'service_failure_count_2',
          'service_failure_count_3', 'service_failure_count_4', 'download_over_limit_0',
          'download_over_limit_1', 'download_over_limit_2', 'download_over_limit_3',
