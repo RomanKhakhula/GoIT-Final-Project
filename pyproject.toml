@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "goit-final-project-work-ek"
+version = "0.1.0"
+description = ""
+authors = ["RomanKhakhula <rkhakhula@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+pandas = "2.2.2"
+matplotlib = "3.9.1"
+seaborn = "0.13.2"
+streamlit = "1.36.0"
+scikit-learn = "1.5.1"
+tensorflow = "2.17.0"
+joblib = "1.4.2"
+tensorflow_intel = "2.17.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
