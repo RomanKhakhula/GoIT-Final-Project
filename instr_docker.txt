@@ -1,0 +1,6 @@
+1. запустити Docker desktop
+2. з терміналу (vscode) -> docker build -t goit-final-project-ek-rk:latest "." -> в Docker desktop images появиться img goit-final-project-ek-rk
+3. тестуєш -> docker run -p 8501:8501 goit-final-project-ek-rk -> в браузері localhost:8501 має стартанути додаток
+4. тестуєш -> docker-compose up -> в браузері localhost:8501 має стартанути додаток 
+5. тестуєш -> docker-compose down goit-final-project-ek-rk -> зупиняє і видаляє робочі контейнерт / сервфси
+6. заливаєш на DockerHub -> docker push goit-final-project-ek-rk -> або через Docker desktop

@@ -1,6 +1,6 @@
 version: '1'
 services:
-  goit-finql-project-ek-rk:
-    image: goit-finql-project-ek-rk
+  goit-final-project-ek-rk:
+    image: goit-final-project-ek-rk
     ports:
       - "8501:8501"
