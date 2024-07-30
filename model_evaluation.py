@@ -5,21 +5,24 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import accuracy_score, recall_score, precision_score, f1_score, mean_squared_error
 from sklearn.preprocessing import StandardScaler
+# for tf in venv
+# import sys
+# sys.path.append("c:/users/roman.khakhula/appdata/local/programs/python/python312/lib/site-packages")
 import tensorflow as tf
 import joblib
+from pathlib import Path
 
 def model_evaluation():
     # Завантаження даних
-    data_path = "D:\\Repos\\Final_GoIT_Project\\final_df.csv"
+    data_path = Path('final_df.csv').absolute()
     data = pd.read_csv(data_path)
     
     # Розділення даних на ознаки та мітки
-    X = data.drop(['churn','upload_avg_norm','reamining_contract'], axis=1)
+    X = data.drop('churn', axis=1)
     y = data['churn']
 
     # Розділення на тренувальний та тестовий набори
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
 
     # Масштабування даних
     scaler = StandardScaler()
@@ -27,10 +30,10 @@ def model_evaluation():
     X_test = scaler.transform(X_test)
 
     # Завантаження моделей
-    logistic_regression_model = joblib.load("D:\\Repos\\Final_GoIT_Project\\Logistic_Regression_model.pkl")
-    decision_tree_model = joblib.load("D:\\Repos\\Final_GoIT_Project\\Decision_Tree_model.pkl")
-    random_forest_model = joblib.load("D:\\Repos\\Final_GoIT_Project\\Random_Forest_model.pkl")
-    neural_network_model = tf.keras.models.load_model("D:\\Repos\\Final_GoIT_Project\\neural_network_model.h5")
+    logistic_regression_model = joblib.load(Path('Logistic_Regression_model.pkl').absolute())
+    decision_tree_model = joblib.load(Path('Decision_Tree_model.pkl').absolute())
+    random_forest_model = joblib.load(Path('Random_Forest_model.pkl').absolute())
+    neural_network_model = tf.keras.models.load_model(Path('neural_network_model.h5').absolute())
 
     models = {
         'Logistic Regression': logistic_regression_model,
@@ -70,6 +73,10 @@ def model_evaluation():
         print(f"{model_name} - MSE: {mse:.4f}")'''
     
     return history, scaler, models
+
+# global scaler
+# global models
+model_history, scaler, models = model_evaluation()
 
 if __name__ == "__main__":
     model_history = model_evaluation()

@@ -1,60 +1,50 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
+from pathlib import Path
 
-from model_evaluation import model_evaluation # type: ignore
-from data_analysis import data_analysis, plot_correlation_matrix, prepare_data_for_prediction # type: ignore
+from data_analysis import features_groups, analysis_results, final_df, work_df, correlations, prepare_data_for_prediction
+from model_evaluation import model_history, scaler, models
 
 # Вкладка 1: Аналіз даних
 def data_analysis_streamlit():
     st.title("Аналіз даних:")
 
-    # Run data analysis
-    analysis_results, final_df = data_analysis()
+    # Create a group of available metrics
+    available_metrics_group = st.selectbox('Оберіть групу метрик для відображення:', [key for key in features_groups.keys()])
 
     # Create a list of available metrics
-    available_metrics = [key for key, _ in analysis_results]
+    available_metrics = features_groups[available_metrics_group]
     
     # Select which metric to display
     selected_metric = st.selectbox("Оберіть метрику для відображення", available_metrics)
 
-    # Display selected metric
-    for key, value in analysis_results:
-        if key == selected_metric:
-            st.write(key)
-            if isinstance(value, pd.DataFrame):
-                st.write(value)
-            elif isinstance(value, plt.Figure):
-                st.pyplot(value)
-            else:
-                st.write(value)
+    # # Display selected metric
+
+    st.write(f'{selected_metric} (describe):')
+    st.write(analysis_results[selected_metric][0])
+    st.write(f'{selected_metric} (frequency / avg prob of churn):')
+    st.write(analysis_results[selected_metric][1])
+    st.write(f'{selected_metric} (frequency / avg prob of churn) vizualization:')
+    st.pyplot(analysis_results[selected_metric][2])
+
+    st.title("Аналіз кореляцій:")
 
     # Define the actual columns in final_df for correlation matrices
-    discrete_columns = ['is_tv_subscriber', 'is_movie_package_subscriber', 'reamining_contract',
-                        'service_failure_count_0', 'service_failure_count_1', 'service_failure_count_2',
-                        'service_failure_count_3', 'service_failure_count_4', 'download_over_limit_0',
-                        'download_over_limit_1', 'download_over_limit_2', 'download_over_limit_3',
-                        'download_over_limit_4', 'download_over_limit_5', 'download_over_limit_6',
-                        'download_over_limit_7', 'churn']
+    
+    selected_correlation = st.selectbox('Оберіть групу метрик для відображення:', [key for key in correlations.keys()])
 
-    continuous_columns = ['subscription_age_norm', 'bill_avg_norm', 'download_avg_norm', 'upload_avg_norm', 'churn']
-
-    st.write("Correlation Matrix for Discrete Features")
-    st.pyplot(plot_correlation_matrix(final_df, discrete_columns))
-
-    st.write("Correlation Matrix for Continuous Features")
-    st.pyplot(plot_correlation_matrix(final_df, continuous_columns))
+    st.write(selected_correlation)
+    st.pyplot(correlations[selected_correlation][1])
 
     # Display final DataFrame
-    st.write("Final DataFrame:")
-    st.write(final_df.head())
+    # st.write("Final DataFrame:")
+    # st.write(final_df.head())
+
 
 # Вкладка 2: Оцінка моделей
 def model_evaluation_streamlit():
     st.title("Оцінка моделей:")
-    global scaler
-    global models
-    model_history, scaler, models = model_evaluation()
 
     # Create a list of available models
     available_models = list(model_history.keys())
@@ -69,7 +59,7 @@ def model_evaluation_streamlit():
     st.write(f"Precision: {metrics['Precision']:.4f}")
     st.write(f"Recall: {metrics['Recall']:.4f}")
     st.write(f"F1 Score: {metrics['F1 Score']:.4f}")
-    st.image(f"D:\\Repos\\Final_GoIT_Project\\{selected_model}.png", caption=f"{selected_model} accuracy\score")
+    st.image(str(Path(f'{selected_model}.png').absolute()), caption=f"{selected_model} accuracy\score")
     st.write("---")
 
 # Вкладка 3: Передбачення
@@ -87,7 +77,7 @@ def prediction():
             df = pd.read_csv(uploaded_file)
             prepared_data = prepare_data_for_prediction(df)
             prepared_data_scaled = scaler.transform(prepared_data)
-            result_df = pd.DataFrame()
+            result_df = None
             predictions = {}
             for model_name, model in models.items():
                 if model_name == 'Neural Network':
@@ -97,11 +87,16 @@ def prediction():
                 predictions[model_name] = pred
 
             for model_name, pred in predictions.items():
-                result_df[f'{model_name}_probability'] = pred
+                if result_df is None:
+                    result_df = pd.DataFrame(pred.T, columns = [f'{model_name}_probability'], index = list(prepared_data.index.values))
+                else:
+                    result_df = pd.concat([result_df, pd.DataFrame(pred.T, columns = [f'{model_name}_probability'], index = list(prepared_data.index.values))], axis = 1)
 
+            result_df = pd.concat([result_df.map('{:,.2%}'.format), work_df['churn']], axis = 1).rename(columns = {'churn' : 'Fact churn'})
+            result_df = result_df.loc[result_df[result_df.columns[0]].notna()]
             st.write(result_df)
             st.download_button(
-                label="Download Predictions",
+                label="Завантажити предікти",
                 data=result_df.to_csv(index=False),
                 file_name="predictions.csv",
                 mime="text/csv"
@@ -122,13 +117,13 @@ def prediction():
         user_id = st.number_input('id', min_value=0)
         is_tv_subscriber = st.selectbox("is_tv_subscriber", [0, 1])
         is_movie_package_subscriber = st.selectbox("is_movie_package_subscriber", [0, 1])
-        subscription_age = st.slider("subscription_age", 0.0, 100.0)
-        bill_avg = st.slider("bill_avg", 0.0, 200.0)
-        reamining_contract = st.slider("reamining_contract", 0.0, 12.0)
-        service_failure_count = st.selectbox("service_failure_count", list(range(5)))
-        download_avg = st.slider("download_avg", 0.0, 100.0)
-        upload_avg = st.slider("upload_avg", 0.0, 100.0)
-        download_over_limit = st.selectbox("download_over_limit", list(range(8)))
+        subscription_age = st.slider("subscription_age", work_df['subscription_age'].min(), work_df['subscription_age'].max())
+        bill_avg = st.slider("bill_avg", work_df['bill_avg'].min(), work_df['bill_avg'].max())
+        reamining_contract = st.slider("reamining_contract", work_df['reamining_contract'].min(), work_df['reamining_contract'].max())
+        service_failure_count = st.selectbox("service_failure_count", list(range(work_df['service_failure_count'].max() + 1)))
+        download_avg = st.slider("download_avg", work_df['download_avg'].min(), work_df['download_avg'].max())
+        upload_avg = st.slider("upload_avg", work_df['upload_avg'].min(), work_df['upload_avg'].max())
+        download_over_limit = st.selectbox("download_over_limit", list(range(work_df['download_over_limit'].max() + 1)))
 
         if st.button("Передбачити"):
             input_data = pd.DataFrame([{
@@ -140,7 +135,7 @@ def prediction():
             }])
             prepared_data = prepare_data_for_prediction(input_data)
             prepared_data_scaled = scaler.transform(prepared_data)
-            result_df = pd.DataFrame()
+            result_df = None
             predictions = {}
             for model_name, model in models.items():
                 if model_name == "Neural Network":
@@ -150,8 +145,13 @@ def prediction():
                 predictions[model_name] = pred
             
             for model_name, pred in predictions.items():
-                result_df[f'{model_name}_probability'] = pred
+                if result_df is None:
+                    result_df = pd.DataFrame(pred.T, columns = [f'{model_name}_probability'], index = list(prepared_data.index.values))
+                else:
+                    result_df = pd.concat([result_df, pd.DataFrame(pred.T, columns = [f'{model_name}_probability'], index = list(prepared_data.index.values))], axis = 1)
 
+            result_df = pd.concat([result_df.map('{:,.2%}'.format), work_df['churn']], axis = 1).rename(columns = {'churn' : 'Fact churn'})
+            result_df = result_df.loc[result_df[result_df.columns[0]].notna()]
             st.write("Прогнози для введеного запису:")
             st.write(result_df)
             st.download_button(
