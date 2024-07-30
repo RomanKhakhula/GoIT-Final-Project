@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "goit-final-project-work-ek"
+name = "goit-final-project"
 version = "0.1.0"
 description = ""
 authors = ["RomanKhakhula <rkhakhula@gmail.com>"]
