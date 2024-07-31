@@ -8,10 +8,10 @@ ENV APP_HOME /app
 WORKDIR $APP_HOME
 
 # Встановимо залежності всередині контейнера
-COPY pyproject.toml $APP_HOME/pyproject.toml
+COPY requirements.txt $APP_HOME/requirements.txt
 
-RUN pip install poetry
-RUN poetry config virtualenvs.create false && poetry install --only main
+RUN python3 -m pip install --upgrade pip
+RUN pip install -r requirements.txt
 
 # Скопіюємо інші файли в робочу директорію контейнера
 COPY . .
